@@ -1,21 +1,43 @@
 @{
     ViewData["Title"] = "Dashboard";
-    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-
-<div class="dashboard-container">
-    <div class="welcome-card">
-        <div class="username">
-            Hello, <strong>@ViewData["Username"]</strong>
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 text-primary">Welcome, @ViewData["Username"]!</h1>
         </div>
     </div>
 
-   
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100 border-0 bg-light">
+                <div class="card-body text-center p-5">
+                    <div class="mb-3 text-primary">
+                        <i class="bi bi-people-fill" style="font-size: 3rem;"></i>
+                    </div>
+                    <h3 class="card-title text-dark">Employee Directory</h3>
+                    
+                    <a asp-controller="Employee" asp-action="Index" class="btn btn-outline-primary w-100 py-2">
+                        View Employees
+                    </a>
+                </div>
+            </div>
+        </div>
 
-    <div class="logout-section">
-        <a href="@Url.Action("Logout", "Dashboard")" class="action-btn btn-danger-custom">
-            <i class="bi bi-box-arrow-right"></i> Logout
-        </a>
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100 border-0 bg-white">
+                <div class="card-body text-center p-5">
+                    <div class="mb-3 text-success">
+                        <i class="bi bi-person-plus-fill" style="font-size: 3rem;"></i>
+                    </div>
+                    <h3 class="card-title text-dark">Add New Employee</h3>
+                    
+                    <a asp-controller="Employee" asp-action="Create" class="btn btn-success w-100 py-2">
+                        Create New Employee
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
