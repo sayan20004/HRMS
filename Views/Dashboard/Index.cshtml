@@ -1,0 +1,21 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="dashboard-container">
+    <div class="welcome-card">
+        <div class="username">
+            Hello, <strong>@ViewData["Username"]</strong>
+        </div>
+    </div>
+
+   
+
+    <div class="logout-section">
+        <a href="@Url.Action("Logout", "Dashboard")" class="action-btn btn-danger-custom">
+            <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+    </div>
+</div>

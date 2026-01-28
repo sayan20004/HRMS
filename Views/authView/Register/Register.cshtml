@@ -1,0 +1,218 @@
+@model HRMS.Models.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Registration Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .register-container {
+        max-width: 500px;
+        margin: 50px auto;
+        padding: 40px;
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .register-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .register-header h2 {
+        color: #663399;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .register-header p {
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control {
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        padding: 10px 15px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #663399;
+        box-shadow: 0 0 0 0.2rem rgba(102, 51, 153, 0.25);
+    }
+
+    .btn-register {
+        width: 100%;
+        background: #663399;
+        color: white;
+        padding: 12px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .btn-register:hover {
+        background: #552288;
+    }
+
+    .btn-register:disabled {
+        background: #b8a3d1;
+        cursor: not-allowed;
+    }
+
+    .alert {
+        padding: 12px 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+
+    .alert-success {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+
+    .alert-danger {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+
+    .alert ul {
+        margin: 5px 0 0 0;
+        padding-left: 20px;
+    }
+
+    .login-link {
+        text-align: center;
+        margin-top: 20px;
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .login-link a {
+        color: #663399;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+
+    .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 0.8s linear infinite;
+        margin-right: 8px;
+    }
+
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .password-requirements {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+</style>
+
+<div class="register-container">
+    <div class="register-header">
+        <h2>Create Account</h2>
+      
+    </div>
+
+    <div id="alertContainer"></div>
+
+    @if (!ViewContext.ModelState.IsValid && ViewContext.ModelState.ErrorCount > 0)
+    {
+        <div class="alert alert-danger">
+            
+            <ul style="margin: 5px 0 0 0; padding-left: 20px;">
+                @foreach (var error in ViewContext.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <form id="registerForm" method="post" asp-action="Register" asp-controller="Register">
+        <div class="form-group">
+             <label class="form-label" asp-for="FullName">Full Name</label>
+            <input type="text" class="form-control" asp-for="FullName" placeholder="John Doe" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="Email">Email Address</label>
+            <input type="email" class="form-control" asp-for="Email" placeholder="john@example.com" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="Password">Password</label>
+            <input type="password" class="form-control" asp-for="Password" placeholder="Enter password" />
+            <div class="password-requirements">
+                Minimum 6 characters, with uppercase, lowercase, and digit
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="ConfirmPassword">Confirm Password</label>
+            <input type="password" class="form-control" asp-for="ConfirmPassword" placeholder="Confirm password" />
+        </div>
+
+        <button type="submit" class="btn-register" id="submitBtn">
+            Register
+        </button>
+    </form>
+
+    <div class="login-link">
+        Already have an account? <a href="@Url.Action("Login", "Register")">Login here</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            var password = document.getElementById('Password').value;
+            var confirmPassword = document.getElementById('ConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+                return false;
+            }
+            
+            if (password.length < 6) {
+                e.preventDefault();
+                alert('Password must be at least 6 characters long!');
+                return false;
+            }
+        });
+    </script>
+}
+
