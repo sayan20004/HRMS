@@ -27,6 +27,13 @@ namespace HRMS.Controllers
 
         public async Task<IActionResult> Index()
         {
+            // Check if token exists
+            var token = HttpContext.Session.GetString("Token");
+            if (string.IsNullOrEmpty(token))
+            {
+                return Content("DEBUG ERROR: No Token found in Session. Please Login again.");
+            }
+
             AddAuthHeader();
             var response = await _client.GetAsync($"{_apiBaseUrl}/profile");
 
@@ -37,7 +44,9 @@ namespace HRMS.Controllers
                 var profile = JsonSerializer.Deserialize<ProfileViewModel>(content, options);
                 return View(profile);
             }
-            return RedirectToAction("Login", "Register");
+            
+            
+            return Content($"DEBUG ERROR: API Call Failed. Status Code: {response.StatusCode}. Reason: {response.ReasonPhrase}");
         }
 
         [HttpPost]

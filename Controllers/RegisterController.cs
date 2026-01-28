@@ -89,7 +89,7 @@ namespace HRMS.Controllers
 
                     if (authData != null)
                     {
-                        // CRITICAL: Save Token to Session
+                        // Save Token to Session
                         HttpContext.Session.SetString("Token", authData.Token);
                         HttpContext.Session.SetString("Username", authData.FullName);
                         HttpContext.Session.SetString("Email", authData.Email);
