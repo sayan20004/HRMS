@@ -1,9 +1,7 @@
+using HRMS.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-
-// Add Session services
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -12,12 +10,11 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Add HttpClient
-builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<GoogleCaptchaService>();
+builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -29,17 +26,9 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthorization();
-
-// Add Session middleware
 app.UseSession();
 
-// Custom route for reset-password
-app.MapControllerRoute(
-    name: "reset-password",
-    pattern: "reset-password",
-    defaults: new { controller = "Register", action = "ResetPassword" }
-);
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",

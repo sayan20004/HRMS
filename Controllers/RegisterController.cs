@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using HRMS.Models;
+using HRMS.Services;
 using System.Text.Json;
 using System.Text;
 
@@ -8,11 +9,16 @@ namespace HRMS.Controllers
     public class RegisterController : Controller
     {
         private readonly HttpClient _client;
+        private readonly GoogleCaptchaService _captchaService;
+        private readonly IConfiguration _configuration;
         private readonly string _apiBaseUrl = "http://localhost:5173/api/auth";
 
-        public RegisterController()
+        // CRITICAL FIX: There is now ONLY ONE constructor here.
+        public RegisterController(GoogleCaptchaService captchaService, IConfiguration configuration)
         {
             _client = new HttpClient();
+            _captchaService = captchaService;
+            _configuration = configuration;
         }
 
         public IActionResult Index()
@@ -21,6 +27,8 @@ namespace HRMS.Controllers
             {
                 return RedirectToAction("Index", "Dashboard");
             }
+            // Pass the Site Key to the View
+            ViewData["RecaptchaSiteKey"] = _configuration["Recaptcha:SiteKey"];
             ViewData["Title"] = "Registration Page";
             return View("~/Views/authView/Register/Register.cshtml");
         }
@@ -28,8 +36,22 @@ namespace HRMS.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (!ModelState.IsValid) return View("~/Views/authView/Register/Register.cshtml", model);
+            ViewData["RecaptchaSiteKey"] = _configuration["Recaptcha:SiteKey"];
 
+            if (!ModelState.IsValid)
+            {
+                return View("~/Views/authView/Register/Register.cshtml", model);
+            }
+
+            // 1. Verify CAPTCHA
+            var captchaToken = Request.Form["g-recaptcha-response"];
+            if (string.IsNullOrEmpty(captchaToken) || !await _captchaService.VerifyToken(captchaToken))
+            {
+                ModelState.AddModelError("", "Please complete the CAPTCHA verification.");
+                return View("~/Views/authView/Register/Register.cshtml", model);
+            }
+
+            // 2. Proceed with Registration
             var json = JsonSerializer.Serialize(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             
@@ -95,6 +117,7 @@ namespace HRMS.Controllers
             {
                 return RedirectToAction("Index", "Dashboard");
             }
+            ViewData["RecaptchaSiteKey"] = _configuration["Recaptcha:SiteKey"];
             ViewData["Title"] = "Login Page";
             return View("~/Views/authView/Login/Login.cshtml");
         }
@@ -102,6 +125,17 @@ namespace HRMS.Controllers
         [HttpPost]
         public async Task<IActionResult> LoginPost(string email, string password, bool rememberMe = false)
         {
+            ViewData["RecaptchaSiteKey"] = _configuration["Recaptcha:SiteKey"];
+
+            // 1. Verify CAPTCHA
+            var captchaToken = Request.Form["g-recaptcha-response"];
+            if (string.IsNullOrEmpty(captchaToken) || !await _captchaService.VerifyToken(captchaToken))
+            {
+                ViewData["Error"] = "Please complete the CAPTCHA verification.";
+                return View("~/Views/authView/Login/Login.cshtml");
+            }
+
+            // 2. Proceed with Login
             var loginModel = new { Email = email, Password = password, RememberMe = rememberMe };
             var json = JsonSerializer.Serialize(loginModel);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
