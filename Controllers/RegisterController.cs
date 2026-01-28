@@ -28,10 +28,7 @@ namespace HRMS.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return View("~/Views/authView/Register/Register.cshtml", model);
-            }
+            if (!ModelState.IsValid) return View("~/Views/authView/Register/Register.cshtml", model);
 
             var json = JsonSerializer.Serialize(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -42,12 +39,12 @@ namespace HRMS.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    TempData["Success"] = "Registration successful! Please login.";
-                    return RedirectToAction("Login");
+                    HttpContext.Session.SetString("PendingEmail", model.Email);
+                    TempData["Message"] = "OTP sent to your email. Please verify.";
+                    return RedirectToAction("VerifyRegisterOtp");
                 }
                 else
                 {
-                    // Read error from API
                     var errorContent = await response.Content.ReadAsStringAsync();
                     ModelState.AddModelError("", "Registration failed: " + errorContent);
                 }
@@ -58,6 +55,38 @@ namespace HRMS.Controllers
             }
 
             return View("~/Views/authView/Register/Register.cshtml", model);
+        }
+
+        [HttpGet]
+        public IActionResult VerifyRegisterOtp()
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("PendingEmail")))
+                return RedirectToAction("Index");
+            
+            return View("~/Views/authView/Register/VerifyRegisterOtp.cshtml");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> VerifyRegisterOtp(VerifyOtpViewModel model)
+        {
+            var email = HttpContext.Session.GetString("PendingEmail");
+            if (string.IsNullOrEmpty(email)) return RedirectToAction("Index");
+
+            var payload = new { Email = email, Otp = model.Otp };
+            var json = JsonSerializer.Serialize(payload);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync($"{_apiBaseUrl}/verify-register-otp", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                HttpContext.Session.Remove("PendingEmail");
+                TempData["Success"] = "Verification successful! Please login.";
+                return RedirectToAction("Login");
+            }
+
+            ModelState.AddModelError("", "Invalid or expired OTP.");
+            return View("~/Views/authView/Register/VerifyRegisterOtp.cshtml", model);
         }
 
         public IActionResult Login()
@@ -83,19 +112,10 @@ namespace HRMS.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var responseString = await response.Content.ReadAsStringAsync();
-                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                    var authData = JsonSerializer.Deserialize<AuthResponse>(responseString, options);
-
-                    if (authData != null)
-                    {
-                        // Save Token to Session
-                        HttpContext.Session.SetString("Token", authData.Token);
-                        HttpContext.Session.SetString("Username", authData.FullName);
-                        HttpContext.Session.SetString("Email", authData.Email);
-                        
-                        return RedirectToAction("Index", "Dashboard");
-                    }
+                    HttpContext.Session.SetString("PendingEmail", email);
+                    HttpContext.Session.SetString("RememberMe", rememberMe.ToString());
+                    TempData["Message"] = "OTP sent to your email. Please verify.";
+                    return RedirectToAction("VerifyLoginOtp");
                 }
                 
                 ViewData["Error"] = "Invalid email or password";
@@ -106,6 +126,51 @@ namespace HRMS.Controllers
             }
 
             return View("~/Views/authView/Login/Login.cshtml");
+        }
+
+        [HttpGet]
+        public IActionResult VerifyLoginOtp()
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("PendingEmail")))
+                return RedirectToAction("Login");
+
+            return View("~/Views/authView/Login/VerifyLoginOtp.cshtml");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> VerifyLoginOtp(VerifyOtpViewModel model)
+        {
+            var email = HttpContext.Session.GetString("PendingEmail");
+            var rememberMe = HttpContext.Session.GetString("RememberMe") == "True";
+            
+            if (string.IsNullOrEmpty(email)) return RedirectToAction("Login");
+
+            var payload = new { Email = email, Otp = model.Otp, RememberMe = rememberMe };
+            var json = JsonSerializer.Serialize(payload);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync($"{_apiBaseUrl}/verify-login-otp", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseString = await response.Content.ReadAsStringAsync();
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var authData = JsonSerializer.Deserialize<AuthResponse>(responseString, options);
+
+                if (authData != null)
+                {
+                    HttpContext.Session.SetString("Token", authData.Token);
+                    HttpContext.Session.SetString("Username", authData.FullName);
+                    HttpContext.Session.SetString("Email", authData.Email);
+                    HttpContext.Session.Remove("PendingEmail");
+                    HttpContext.Session.Remove("RememberMe");
+                    
+                    return RedirectToAction("Index", "Dashboard");
+                }
+            }
+
+            ModelState.AddModelError("", "Invalid or expired OTP.");
+            return View("~/Views/authView/Login/VerifyLoginOtp.cshtml", model);
         }
 
         public IActionResult Logout()

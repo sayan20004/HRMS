@@ -1,0 +1,27 @@
+@model HRMS.Models.VerifyOtpViewModel
+@{
+    ViewData["Title"] = "Verify Login OTP";
+}
+
+<div class="container mt-5" style="max-width: 400px;">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Verify Login</h4>
+        </div>
+        <div class="card-body">
+            @if (TempData["Message"] != null)
+            {
+                <div class="alert alert-info">@TempData["Message"]</div>
+            }
+            <form asp-action="VerifyLoginOtp" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="mb-3">
+                    <label class="form-label">Enter OTP sent to your email</label>
+                    <input asp-for="Otp" class="form-control" placeholder="123456" />
+                    <span asp-validation-for="Otp" class="text-danger"></span>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Verify & Login</button>
+            </form>
+        </div>
+    </div>
+</div>
