@@ -1,22 +1,81 @@
-html {
-  font-size: 14px;
+html, body {
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+  overflow-x: hidden;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+/* FLEX WRAPPER */
+.wrapper {
+  display: flex;
+  width: 100%;
+  align-items: stretch;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+/* SIDEBAR (Desktop: Visible) */
+#sidebar {
+  min-width: 260px;
+  max-width: 260px;
+  min-height: 100vh;
+  background: #212529;
+  color: #fff;
+  transition: all 0.3s;
+  margin-left: 0;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+/* SIDEBAR ACTIVE (Desktop: Hidden) */
+#sidebar.active {
+  margin-left: -260px;
 }
 
-body {
-  margin-bottom: 60px;
+/* HEADER */
+#sidebar .sidebar-header {
+  padding: 20px;
+  background: #1c1f23;
+  border-bottom: 1px solid #4b545c;
+}
+
+/* LINKS */
+#sidebar ul.components { padding: 20px 0; }
+#sidebar ul li a {
+  padding: 12px 20px;
+  font-size: 1em;
+  display: block;
+  color: #adb5bd;
+  text-decoration: none;
+
+  /* transition: 0.3s; */
+  border-left: 3px solid transparent;
+}
+
+#sidebar ul li a:hover, #sidebar ul li.active > a {
+  color: #fff;
+  background: #343a40;
+  border-left: 3px solid #0d6efd;
+}
+
+/* DROPDOWN ARROW */
+.dropdown-toggle::after {
+  display: block;
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+}
+
+/* SUB-MENU */
+ul.collapse { background: #2c3034; }
+/* ul.collapse li a { padding-left: 45px !important; font-size: 0.9em; } */
+
+/* CONTENT */
+#content {
+  width: 100%;
+  min-height: 100vh;
+  transition: all 0.3s;
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+  #sidebar { margin-left: -260px; } /* Mobile: Hidden */
+  #sidebar.active { margin-left: 0; } /* Mobile: Show */
 }

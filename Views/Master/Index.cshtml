@@ -8,99 +8,36 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Master Data Management</h2>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createMasterModal">
+            <i class="bi bi-plus-circle"></i> Add New Master Data
+        </button>
     </div>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    <div class="card shadow-sm mb-5 border-primary">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="bi bi-plus-square"></i> Add New Master Data</h5>
-        </div>
-        <div class="card-body">
-            <form asp-action="Create" method="post">
-                <div class="row">
-                    <div class="col-md-6 border-end">
-                        <h6 class="text-muted mb-3 fw-bold text-uppercase">Department Details</h6>
-                        <div class="mb-3">
-                            <label asp-for="DeptName" class="form-label"></label>
-                            <input asp-for="DeptName" class="form-control" placeholder="e.g. Human Resources" />
-                        </div>
-                        
-                    </div>
-
-                    <div class="col-md-6">
-                        <h6 class="text-muted mb-3 fw-bold text-uppercase">Designation Details</h6>
-                        <div class="mb-3">
-                            <label asp-for="DesigName" class="form-label"></label>
-                            <input asp-for="DesigName" class="form-control" placeholder="e.g. Senior Manager" />
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="DesigLevel" class="form-label"></label>
-                            <input asp-for="DesigLevel" class="form-control" type="number" min="1" max="10" placeholder="1" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row mt-3">
-                    <div class="col-12 text-center">
-                        <button type="submit" class="btn btn-success px-5 py-2 fw-bold shadow-sm">
-                            <i class="bi bi-save-fill"></i> Save Data
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+    @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
+    @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
 
     <div class="row">
         <div class="col-md-6">
             <div class="card shadow-sm h-100">
-                <div class="card-header bg-light fw-bold">
-                    <i class="bi bi-building"></i> Existing Departments
-                </div>
+                <div class="card-header bg-light"><strong>Existing Departments</strong></div>
                 <div class="card-body p-0">
                     <table class="table table-striped mb-0 align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Name</th>
-                                <th class="text-end">Action</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>Name</th><th class="text-end">Action</th></tr></thead>
                         <tbody>
-                            @if (Model.Departments != null && Model.Departments.Any())
-                            {
-                                foreach (var item in Model.Departments)
-                                {
-                                    <tr>
-                                        <td>@item.Name</td>
-                                        
-                                        <td class="text-end">
-                                            <form asp-action="DeleteDepartment" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete the @item.Name department?');">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger border-0" title="Delete">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                            else
+                            @foreach (var item in Model.Departments)
                             {
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted py-3">No Departments Found</td>
+                                    <td>@item.Name</td>
+                                    
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-warning border-0 edit-dept-btn"
+                                                data-id="@item.Id" data-name="@item.Name" data-code="@item.Code">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                        <form asp-action="DeleteDepartment" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Delete?');">
+                                            <button class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </td>
                                 </tr>
                             }
                         </tbody>
@@ -111,40 +48,25 @@
 
         <div class="col-md-6">
             <div class="card shadow-sm h-100">
-                <div class="card-header bg-light fw-bold">
-                    <i class="bi bi-person-badge"></i> Existing Designations
-                </div>
+                <div class="card-header bg-light"><strong>Existing Designations</strong></div>
                 <div class="card-body p-0">
                     <table class="table table-striped mb-0 align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Name</th>
-                                <th>Level</th>
-                                <th class="text-end">Action</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>Name</th><th>Level</th><th class="text-end">Action</th></tr></thead>
                         <tbody>
-                            @if (Model.Designations != null && Model.Designations.Any())
-                            {
-                                foreach (var item in Model.Designations)
-                                {
-                                    <tr>
-                                        <td>@item.Name</td>
-                                        <td><span class="badge bg-info text-dark">Level @item.Level</span></td>
-                                        <td class="text-end">
-                                            <form asp-action="DeleteDesignation" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete the @item.Name designation?');">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger border-0" title="Delete">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                            else
+                            @foreach (var item in Model.Designations)
                             {
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted py-3">No Designations Found</td>
+                                    <td>@item.Name</td>
+                                    <td><span class="badge bg-info text-dark">Level @item.Level</span></td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-warning border-0 edit-desig-btn"
+                                                data-id="@item.Id" data-name="@item.Name" data-level="@item.Level">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                        <form asp-action="DeleteDesignation" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Delete?');">
+                                            <button class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </td>
                                 </tr>
                             }
                         </tbody>
@@ -154,3 +76,127 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="createMasterModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Add Master Data</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Create" method="post">
+                    <div class="row">
+                        <div class="col-md-6 border-end">
+                            <h6 class="text-primary">Department</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Name</label>
+                                <input asp-for="DeptName" class="form-control" />
+                            </div>
+                            
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Designation</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Name</label>
+                                <input asp-for="DesigName" class="form-control" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Level (1-10)</label>
+                                <input asp-for="DesigLevel" class="form-control" type="number" min="1" max="10" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <button type="submit" class="btn btn-success px-4">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editDeptModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">Edit Department</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="EditDepartment" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="Id" id="editDept_Id" />
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input name="Name" id="editDept_Name" class="form-control" required />
+                    </div>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-warning">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editDesigModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">Edit Designation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="EditDesignation" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="Id" id="editDesig_Id" />
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input name="Name" id="editDesig_Name" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Level</label>
+                        <input name="Level" id="editDesig_Level" class="form-control" type="number" min="1" max="10" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-warning">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            
+            // Open Edit Dept Modal
+            $('.edit-dept-btn').click(function () {
+                var id = $(this).data('id');
+                var name = $(this).data('name');
+                var code = $(this).data('code');
+
+                $('#editDept_Id').val(id);
+                $('#editDept_Name').val(name);
+                $('#editDept_Code').val(code);
+
+                new bootstrap.Modal(document.getElementById('editDeptModal')).show();
+            });
+
+            // Open Edit Desig Modal
+            $('.edit-desig-btn').click(function () {
+                var id = $(this).data('id');
+                var name = $(this).data('name');
+                var level = $(this).data('level');
+
+                $('#editDesig_Id').val(id);
+                $('#editDesig_Name').val(name);
+                $('#editDesig_Level').val(level);
+
+                new bootstrap.Modal(document.getElementById('editDesigModal')).show();
+            });
+
+        });
+    </script>
+}
