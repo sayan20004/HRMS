@@ -21,7 +21,12 @@
             <label>Password</label>
             <input type="password" class="form-control" name="password" required>
         </div>
-
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="rememberMe" value="true" id="rememberMeCheck">
+            <label class="form-check-label" for="rememberMeCheck">
+                Remember Me
+            </label>
+        </div>
         <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response" />
 
         <button type="submit" class="btn btn-primary w-100">Login</button>

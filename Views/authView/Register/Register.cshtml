@@ -36,7 +36,12 @@
                 <input asp-for="ConfirmPassword" class="form-control" type="password" />
                 <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
             </div>
-
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="rememberMe" value="true" id="rememberMeRegister">
+                <label class="form-check-label" for="rememberMeRegister">
+                    Keep me signed in
+                </label>
+            </div>
             <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response" />
 
             <button type="submit" class="btn btn-primary w-100">Register</button>

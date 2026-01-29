@@ -10,45 +10,54 @@
         <h2>Master Data Management</h2>
     </div>
 
-    @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
-    @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
     <div class="card shadow-sm mb-5 border-primary">
         <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Add New Master Data</h5>
+            <h5 class="mb-0"><i class="bi bi-plus-square"></i> Add New Master Data</h5>
         </div>
         <div class="card-body">
             <form asp-action="Create" method="post">
                 <div class="row">
                     <div class="col-md-6 border-end">
-                        <h6 class="text-muted mb-3">Department Details</h6>
+                        <h6 class="text-muted mb-3 fw-bold text-uppercase">Department Details</h6>
                         <div class="mb-3">
                             <label asp-for="DeptName" class="form-label"></label>
                             <input asp-for="DeptName" class="form-control" placeholder="e.g. Human Resources" />
                         </div>
-                        @* <div class="mb-3">
-                            <label asp-for="DeptCode" class="form-label"></label>
-                            <input asp-for="DeptCode" class="form-control" placeholder="e.g. HR" />
-                        </div> *@
+                        
                     </div>
 
                     <div class="col-md-6">
-                        <h6 class="text-muted mb-3">Designation Details</h6>
+                        <h6 class="text-muted mb-3 fw-bold text-uppercase">Designation Details</h6>
                         <div class="mb-3">
                             <label asp-for="DesigName" class="form-label"></label>
                             <input asp-for="DesigName" class="form-control" placeholder="e.g. Senior Manager" />
                         </div>
-                        @* <div class="mb-3">
+                        <div class="mb-3">
                             <label asp-for="DesigLevel" class="form-label"></label>
                             <input asp-for="DesigLevel" class="form-control" type="number" min="1" max="10" placeholder="1" />
-                        </div> *@
+                        </div>
                     </div>
                 </div>
 
                 <div class="row mt-3">
                     <div class="col-12 text-center">
-                        <button type="submit" class="btn btn-success px-5 py-2 fw-bold">
-                            <i class="bi bi-save"></i> Save All
+                        <button type="submit" class="btn btn-success px-5 py-2 fw-bold shadow-sm">
+                            <i class="bi bi-save-fill"></i> Save Data
                         </button>
                     </div>
                 </div>
@@ -58,16 +67,16 @@
 
     <div class="row">
         <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
-                    <strong>Existing Departments</strong>
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light fw-bold">
+                    <i class="bi bi-building"></i> Existing Departments
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-striped mb-0">
-                        <thead>
+                    <table class="table table-striped mb-0 align-middle">
+                        <thead class="table-light">
                             <tr>
                                 <th>Name</th>
-                                <th>Code</th>
+                                <th class="text-end">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -77,13 +86,22 @@
                                 {
                                     <tr>
                                         <td>@item.Name</td>
-                                        <td><span class="badge bg-secondary">@item.Id</span> @(item.Code ?? "-")</td>
+                                        
+                                        <td class="text-end">
+                                            <form asp-action="DeleteDepartment" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete the @item.Name department?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger border-0" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
                                     </tr>
                                 }
                             }
                             else
                             {
-                                <tr><td colspan="2" class="text-center text-muted">No Departments Found</td></tr>
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-3">No Departments Found</td>
+                                </tr>
                             }
                         </tbody>
                     </table>
@@ -92,16 +110,17 @@
         </div>
 
         <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
-                    <strong>Existing Designations</strong>
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light fw-bold">
+                    <i class="bi bi-person-badge"></i> Existing Designations
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-striped mb-0">
-                        <thead>
+                    <table class="table table-striped mb-0 align-middle">
+                        <thead class="table-light">
                             <tr>
                                 <th>Name</th>
                                 <th>Level</th>
+                                <th class="text-end">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -111,12 +130,22 @@
                                 {
                                     <tr>
                                         <td>@item.Name</td>
-                                        <td>@item.Id</td> </tr>
+                                        <td><span class="badge bg-info text-dark">Level @item.Level</span></td>
+                                        <td class="text-end">
+                                            <form asp-action="DeleteDesignation" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete the @item.Name designation?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger border-0" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
                                 }
                             }
                             else
                             {
-                                <tr><td colspan="2" class="text-center text-muted">No Designations Found</td></tr>
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-3">No Designations Found</td>
+                                </tr>
                             }
                         </tbody>
                     </table>

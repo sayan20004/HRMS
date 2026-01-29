@@ -25,7 +25,7 @@ namespace HRMS.Models
         [Display(Name = "Date of Birth")]
         public DateTime? DateOfBirth { get; set; }
 
-        // --- Fields for Dropdowns (Create/Edit Forms) ---
+        // --- INPUT FIELDS (For Forms) ---
         [Required]
         [Display(Name = "Department")]
         public int DepartmentId { get; set; }
@@ -34,8 +34,8 @@ namespace HRMS.Models
         [Display(Name = "Designation")]
         public int DesignationId { get; set; }
 
-        // --- Nested Objects for Display (Index List) ---
-        // These match the nested JSON from your API
+        // --- DISPLAY OBJECTS (For Lists) ---
+        // These match the nested JSON structure from the API
         public DepartmentViewModel? Department { get; set; }
         public DesignationViewModel? Designation { get; set; }
     }
@@ -51,6 +51,6 @@ namespace HRMS.Models
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public int Level { get; set; } // This allows you to show Level
+        public int Level { get; set; } 
     }
 }
