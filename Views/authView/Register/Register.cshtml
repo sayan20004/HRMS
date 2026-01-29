@@ -4,13 +4,13 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script src="https://www.google.com/recaptcha/api.js?render=@ViewData["RecaptchaSiteKey"]"></script>
 
 <div class="container mt-5" style="max-width: 500px;">
     <div class="card shadow p-4">
         <h2 class="text-center mb-4">Create Account</h2>
 
-        <form asp-action="Register" method="post">
+        <form asp-action="Register" method="post" id="registerForm">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <div class="mb-3">
@@ -37,9 +37,7 @@
                 <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
             </div>
 
-            <div class="mb-3 d-flex justify-content-center">
-                <div class="g-recaptcha" data-sitekey="@ViewData["RecaptchaSiteKey"]"></div>
-            </div>
+            <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response" />
 
             <button type="submit" class="btn btn-primary w-100">Register</button>
         </form>
@@ -49,6 +47,14 @@
         </div>
     </div>
 </div>
+
+<script>
+    grecaptcha.ready(function() {
+        grecaptcha.execute('@ViewData["RecaptchaSiteKey"]', {action: 'register'}).then(function(token) {
+            document.getElementById('g-recaptcha-response').value = token;
+        });
+    });
+</script>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
