@@ -10,7 +10,9 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+// Register Captcha Service
 builder.Services.AddHttpClient<GoogleCaptchaService>();
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

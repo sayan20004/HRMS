@@ -1,5 +1,4 @@
 @model HRMS.Models.RegisterViewModel
-
 @{
     ViewData["Title"] = "Registration Page";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -7,143 +6,47 @@
 
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
-<style>
-    .register-container {
-        max-width: 500px;
-        margin: 50px auto;
-        padding: 40px;
-        background: #ffffff;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
+<div class="container mt-5" style="max-width: 500px;">
+    <div class="card shadow p-4">
+        <h2 class="text-center mb-4">Create Account</h2>
 
-    .register-header {
-        text-align: center;
-        margin-bottom: 30px;
-    }
+        <form asp-action="Register" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    .register-header h2 {
-        color: #663399;
-        font-weight: 600;
-        margin-bottom: 10px;
-    }
-
-    .register-header p {
-        color: #6c757d;
-        font-size: 14px;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-label {
-        font-weight: 500;
-        color: #333;
-        margin-bottom: 8px;
-        display: block;
-    }
-
-    .form-control {
-        border-radius: 6px;
-        border: 1px solid #ced4da;
-        padding: 10px 15px;
-        font-size: 14px;
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus {
-        border-color: #663399;
-        box-shadow: 0 0 0 0.2rem rgba(102, 51, 153, 0.25);
-    }
-
-    .password-requirements {
-        font-size: 12px;
-        color: #6c757d;
-        margin-top: 5px;
-    }
-
-    .btn-register {
-        width: 100%;
-        padding: 12px;
-        background-color: #663399;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-size: 16px;
-        font-weight: 500;
-        margin-top: 20px;
-        transition: background-color 0.3s ease;
-    }
-
-    .btn-register:hover {
-        background-color: #5a2d82;
-    }
-
-    .login-link {
-        text-align: center;
-        margin-top: 20px;
-        font-size: 14px;
-    }
-
-    .login-link a {
-        color: #663399;
-        text-decoration: none;
-        font-weight: 500;
-    }
-
-    .login-link a:hover {
-        text-decoration: underline;
-    }
-</style>
-
-<div class="register-container">
-    <div class="register-header">
-        <h2>Create Account</h2>
-        <p>Join our HR management system today</p>
-    </div>
-
-    <form asp-action="Register" method="post" id="registerForm">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-        <div class="form-group">
-            <label class="form-label" asp-for="FullName">Full Name</label>
-            <input type="text" class="form-control" asp-for="FullName" placeholder="Enter full name" />
-            <span asp-validation-for="FullName" class="text-danger"></span>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label" asp-for="Email">Email Address</label>
-            <input type="email" class="form-control" asp-for="Email" placeholder="name@company.com" />
-            <span asp-validation-for="Email" class="text-danger"></span>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label" asp-for="Password">Password</label>
-            <input type="password" class="form-control" asp-for="Password" placeholder="Enter password" />
-            <span asp-validation-for="Password" class="text-danger"></span>
-            <div class="password-requirements">
-                Minimum 6 characters
+            <div class="mb-3">
+                <label asp-for="FullName" class="form-label">Full Name</label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
             </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label">Email</label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">Password</label>
+                <input asp-for="Password" class="form-control" type="password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
+                <input asp-for="ConfirmPassword" class="form-control" type="password" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3 d-flex justify-content-center">
+                <div class="g-recaptcha" data-sitekey="@ViewData["RecaptchaSiteKey"]"></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Register</button>
+        </form>
+        
+        <div class="text-center mt-3">
+            <a href="@Url.Action("Login", "Register")">Already have an account? Login</a>
         </div>
-
-        <div class="form-group">
-            <label class="form-label" asp-for="ConfirmPassword">Confirm Password</label>
-            <input type="password" class="form-control" asp-for="ConfirmPassword" placeholder="Confirm password" />
-            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-        </div>
-
-        <div class="form-group d-flex justify-content-center">
-            <div class="g-recaptcha" data-sitekey="@ViewData["RecaptchaSiteKey"]"></div>
-        </div>
-
-        <button type="submit" class="btn-register" id="submitBtn">
-            Register
-        </button>
-    </form>
-
-    <div class="login-link">
-        Already have an account? <a href="@Url.Action("Login", "Register")">Login here</a>
     </div>
 </div>
 

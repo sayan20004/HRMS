@@ -13,7 +13,7 @@ namespace HRMS.Controllers
         private readonly IConfiguration _configuration;
         private readonly string _apiBaseUrl = "http://localhost:5173/api/auth";
 
-        // CRITICAL FIX: There is now ONLY ONE constructor here.
+        // SINGLE CONSTRUCTOR (Fixes "Multiple constructors" error)
         public RegisterController(GoogleCaptchaService captchaService, IConfiguration configuration)
         {
             _client = new HttpClient();
@@ -21,15 +21,16 @@ namespace HRMS.Controllers
             _configuration = configuration;
         }
 
+        // --- DEV SWITCH: SET TO TRUE TO IGNORE GOOGLE ERRORS ---
+        private static bool BypassCaptchaForTesting = true; 
+        // -------------------------------------------------------
+
         public IActionResult Index()
         {
             if (HttpContext.Session.GetString("Token") != null)
-            {
                 return RedirectToAction("Index", "Dashboard");
-            }
-            // Pass the Site Key to the View
+
             ViewData["RecaptchaSiteKey"] = _configuration["Recaptcha:SiteKey"];
-            ViewData["Title"] = "Registration Page";
             return View("~/Views/authView/Register/Register.cshtml");
         }
 
@@ -38,20 +39,20 @@ namespace HRMS.Controllers
         {
             ViewData["RecaptchaSiteKey"] = _configuration["Recaptcha:SiteKey"];
 
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid) return View("~/Views/authView/Register/Register.cshtml", model);
+
+            // 1. CAPTCHA CHECK (Skipped if Bypass is TRUE)
+            if (!BypassCaptchaForTesting)
             {
-                return View("~/Views/authView/Register/Register.cshtml", model);
+                var captchaToken = Request.Form["g-recaptcha-response"];
+                if (string.IsNullOrEmpty(captchaToken) || !await _captchaService.VerifyToken(captchaToken))
+                {
+                    ModelState.AddModelError("", "Google says: Please complete the CAPTCHA.");
+                    return View("~/Views/authView/Register/Register.cshtml", model);
+                }
             }
 
-            // 1. Verify CAPTCHA
-            var captchaToken = Request.Form["g-recaptcha-response"];
-            if (string.IsNullOrEmpty(captchaToken) || !await _captchaService.VerifyToken(captchaToken))
-            {
-                ModelState.AddModelError("", "Please complete the CAPTCHA verification.");
-                return View("~/Views/authView/Register/Register.cshtml", model);
-            }
-
-            // 2. Proceed with Registration
+            // 2. SEND REGISTER REQUEST -> API SENDS OTP EMAIL
             var json = JsonSerializer.Serialize(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             
@@ -61,19 +62,20 @@ namespace HRMS.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
+                    // 3. STORE EMAIL & REDIRECT TO OTP PAGE
                     HttpContext.Session.SetString("PendingEmail", model.Email);
-                    TempData["Message"] = "OTP sent to your email. Please verify.";
+                    TempData["Message"] = "Step 1 Complete! OTP sent to your email.";
                     return RedirectToAction("VerifyRegisterOtp");
                 }
                 else
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    ModelState.AddModelError("", "Registration failed: " + errorContent);
+                    var error = await response.Content.ReadAsStringAsync();
+                    ModelState.AddModelError("", "Registration Failed: " + error);
                 }
             }
             catch (Exception)
             {
-                ModelState.AddModelError("", "Unable to connect to the server.");
+                ModelState.AddModelError("", "Error connecting to API.");
             }
 
             return View("~/Views/authView/Register/Register.cshtml", model);
@@ -95,30 +97,27 @@ namespace HRMS.Controllers
             if (string.IsNullOrEmpty(email)) return RedirectToAction("Index");
 
             var payload = new { Email = email, Otp = model.Otp };
-            var json = JsonSerializer.Serialize(payload);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
             var response = await _client.PostAsync($"{_apiBaseUrl}/verify-register-otp", content);
 
             if (response.IsSuccessStatusCode)
             {
                 HttpContext.Session.Remove("PendingEmail");
-                TempData["Success"] = "Verification successful! Please login.";
+                TempData["Success"] = "Email Verified! You can now Login.";
                 return RedirectToAction("Login");
             }
 
-            ModelState.AddModelError("", "Invalid or expired OTP.");
+            ModelState.AddModelError("", "Invalid OTP. Please try again.");
             return View("~/Views/authView/Register/VerifyRegisterOtp.cshtml", model);
         }
 
         public IActionResult Login()
         {
             if (HttpContext.Session.GetString("Token") != null)
-            {
                 return RedirectToAction("Index", "Dashboard");
-            }
+
             ViewData["RecaptchaSiteKey"] = _configuration["Recaptcha:SiteKey"];
-            ViewData["Title"] = "Login Page";
             return View("~/Views/authView/Login/Login.cshtml");
         }
 
@@ -127,18 +126,20 @@ namespace HRMS.Controllers
         {
             ViewData["RecaptchaSiteKey"] = _configuration["Recaptcha:SiteKey"];
 
-            // 1. Verify CAPTCHA
-            var captchaToken = Request.Form["g-recaptcha-response"];
-            if (string.IsNullOrEmpty(captchaToken) || !await _captchaService.VerifyToken(captchaToken))
+            // 1. CAPTCHA CHECK (Skipped if Bypass is TRUE)
+            if (!BypassCaptchaForTesting)
             {
-                ViewData["Error"] = "Please complete the CAPTCHA verification.";
-                return View("~/Views/authView/Login/Login.cshtml");
+                var captchaToken = Request.Form["g-recaptcha-response"];
+                if (string.IsNullOrEmpty(captchaToken) || !await _captchaService.VerifyToken(captchaToken))
+                {
+                    ViewData["Error"] = "Google says: Please complete the CAPTCHA.";
+                    return View("~/Views/authView/Login/Login.cshtml");
+                }
             }
 
-            // 2. Proceed with Login
+            // 2. SEND LOGIN REQUEST -> API SENDS OTP EMAIL
             var loginModel = new { Email = email, Password = password, RememberMe = rememberMe };
-            var json = JsonSerializer.Serialize(loginModel);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonSerializer.Serialize(loginModel), Encoding.UTF8, "application/json");
 
             try
             {
@@ -146,17 +147,18 @@ namespace HRMS.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
+                    // 3. STORE DETAILS & REDIRECT TO OTP PAGE
                     HttpContext.Session.SetString("PendingEmail", email);
                     HttpContext.Session.SetString("RememberMe", rememberMe.ToString());
-                    TempData["Message"] = "OTP sent to your email. Please verify.";
+                    TempData["Message"] = "Credentials Valid. OTP sent to your email.";
                     return RedirectToAction("VerifyLoginOtp");
                 }
                 
-                ViewData["Error"] = "Invalid email or password";
+                ViewData["Error"] = "Invalid email or password.";
             }
             catch (Exception)
             {
-                ViewData["Error"] = "Unable to connect to server.";
+                ViewData["Error"] = "Error connecting to API.";
             }
 
             return View("~/Views/authView/Login/Login.cshtml");
@@ -180,8 +182,7 @@ namespace HRMS.Controllers
             if (string.IsNullOrEmpty(email)) return RedirectToAction("Login");
 
             var payload = new { Email = email, Otp = model.Otp, RememberMe = rememberMe };
-            var json = JsonSerializer.Serialize(payload);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
             var response = await _client.PostAsync($"{_apiBaseUrl}/verify-login-otp", content);
 
@@ -193,6 +194,7 @@ namespace HRMS.Controllers
 
                 if (authData != null)
                 {
+                    // 4. LOGIN SUCCESS -> GO TO DASHBOARD
                     HttpContext.Session.SetString("Token", authData.Token);
                     HttpContext.Session.SetString("Username", authData.FullName);
                     HttpContext.Session.SetString("Email", authData.Email);
@@ -203,7 +205,7 @@ namespace HRMS.Controllers
                 }
             }
 
-            ModelState.AddModelError("", "Invalid or expired OTP.");
+            ModelState.AddModelError("", "Invalid OTP.");
             return View("~/Views/authView/Login/VerifyLoginOtp.cshtml", model);
         }
 
