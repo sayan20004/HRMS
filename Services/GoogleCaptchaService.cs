@@ -24,18 +24,20 @@ namespace HRMS.Services
                 var response = await _httpClient.GetAsync(url);
                 var jsonString = await response.Content.ReadAsStringAsync();
 
-                // DEBUGGING: Print Google's response to the Console
+                // 1. Log response
                 Console.WriteLine($"[RECAPTCHA DEBUG] Response: {jsonString}");
 
                 if (response.IsSuccessStatusCode)
                 {
+                    // 2. Deserialize safely
                     var captchaResponse = JsonSerializer.Deserialize<CaptchaResponse>(jsonString);
 
-                    // If Success is false, check the console for "error-codes"
+                    // 3. Null check 'captchaResponse' (Fixes CS8602)
+                    if (captchaResponse == null) return false;
+
                     if (!captchaResponse.Success) return false;
 
-                    // On Localhost, we lower the threshold to 0.1 to prevent blocking
-                    // Adjust this to 0.5 when you go to Production
+                    // 4. Adjust score threshold if needed
                     return captchaResponse.Score >= 0.1;
                 }
                 return false;
@@ -47,6 +49,7 @@ namespace HRMS.Services
             }
         }
 
+        // Fixes CS8618: Made properties nullable (?) so compiler knows they might be empty
         private class CaptchaResponse
         {
             [JsonPropertyName("success")]
@@ -56,10 +59,10 @@ namespace HRMS.Services
             public double Score { get; set; }
 
             [JsonPropertyName("action")]
-            public string Action { get; set; }
+            public string? Action { get; set; } // Added '?'
 
             [JsonPropertyName("error-codes")]
-            public List<string> ErrorCodes { get; set; }
+            public List<string>? ErrorCodes { get; set; } // Added '?'
         }
     }
 }

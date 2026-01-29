@@ -33,9 +33,19 @@
 </div>
 
 <script>
-    grecaptcha.ready(function() {
-        grecaptcha.execute('@ViewData["RecaptchaSiteKey"]', {action: 'login'}).then(function(token) {
-            document.getElementById('g-recaptcha-response').value = token;
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        // 1. Stop the form from submitting immediately
+        e.preventDefault();
+        
+        // 2. Request a fresh token from Google
+        grecaptcha.ready(function() {
+            grecaptcha.execute('@ViewData["RecaptchaSiteKey"]', {action: 'login'}).then(function(token) {
+                // 3. Put the token in the hidden input
+                document.getElementById('g-recaptcha-response').value = token;
+                
+                // 4. Submit the form programmatically
+                document.getElementById('loginForm').submit();
+            });
         });
     });
 </script>

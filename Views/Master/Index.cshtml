@@ -1,0 +1,127 @@
+@model HRMS.Models.MasterViewModel
+
+@{
+    ViewData["Title"] = "Master Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Master Data Management</h2>
+    </div>
+
+    @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
+    @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+
+    <div class="card shadow-sm mb-5 border-primary">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Add New Master Data</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div class="row">
+                    <div class="col-md-6 border-end">
+                        <h6 class="text-muted mb-3">Department Details</h6>
+                        <div class="mb-3">
+                            <label asp-for="DeptName" class="form-label"></label>
+                            <input asp-for="DeptName" class="form-control" placeholder="e.g. Human Resources" />
+                        </div>
+                        @* <div class="mb-3">
+                            <label asp-for="DeptCode" class="form-label"></label>
+                            <input asp-for="DeptCode" class="form-control" placeholder="e.g. HR" />
+                        </div> *@
+                    </div>
+
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Designation Details</h6>
+                        <div class="mb-3">
+                            <label asp-for="DesigName" class="form-label"></label>
+                            <input asp-for="DesigName" class="form-control" placeholder="e.g. Senior Manager" />
+                        </div>
+                        @* <div class="mb-3">
+                            <label asp-for="DesigLevel" class="form-label"></label>
+                            <input asp-for="DesigLevel" class="form-control" type="number" min="1" max="10" placeholder="1" />
+                        </div> *@
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-12 text-center">
+                        <button type="submit" class="btn btn-success px-5 py-2 fw-bold">
+                            <i class="bi bi-save"></i> Save All
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <strong>Existing Departments</strong>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Code</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Departments != null && Model.Departments.Any())
+                            {
+                                foreach (var item in Model.Departments)
+                                {
+                                    <tr>
+                                        <td>@item.Name</td>
+                                        <td><span class="badge bg-secondary">@item.Id</span> @(item.Code ?? "-")</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr><td colspan="2" class="text-center text-muted">No Departments Found</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <strong>Existing Designations</strong>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Level</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Designations != null && Model.Designations.Any())
+                            {
+                                foreach (var item in Model.Designations)
+                                {
+                                    <tr>
+                                        <td>@item.Name</td>
+                                        <td>@item.Id</td> </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr><td colspan="2" class="text-center text-muted">No Designations Found</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

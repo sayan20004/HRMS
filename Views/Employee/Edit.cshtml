@@ -2,36 +2,68 @@
 
 @{
     ViewData["Title"] = "Edit Employee";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container mt-4">
     <h2>Edit Employee</h2>
-    <div class="row">
+
+    <form asp-action="Edit" class="row g-3">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        
+        <input type="hidden" asp-for="Id" />
+
         <div class="col-md-6">
-            <form asp-action="Edit">
-                <input type="hidden" asp-for="Id" />
-                <div class="form-group mb-3">
-                    <label asp-for="FullName" class="control-label"></label>
-                    <input asp-for="FullName" class="form-control" />
-                    <span asp-validation-for="FullName" class="text-danger"></span>
-                </div>
-                <div class="form-group mb-3">
-                    <label asp-for="Email" class="control-label"></label>
-                    <input asp-for="Email" class="form-control" type="email" />
-                    <span asp-validation-for="Email" class="text-danger"></span>
-                </div>
-                <div class="form-group mb-3">
-                    <label asp-for="Designation" class="control-label"></label>
-                    <input asp-for="Designation" class="form-control" />
-                    <span asp-validation-for="Designation" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <input type="submit" value="Save Changes" class="btn btn-warning" />
-                    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-                </div>
-            </form>
+            <label asp-for="FullName" class="form-label"></label>
+            <input asp-for="FullName" class="form-control" />
+            <span asp-validation-for="FullName" class="text-danger"></span>
         </div>
-    </div>
+
+        <div class="col-md-6">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="MobileNumber" class="form-label"></label>
+            <input asp-for="MobileNumber" class="form-control" />
+            <span asp-validation-for="MobileNumber" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="DateOfBirth" class="form-label"></label>
+            <input asp-for="DateOfBirth" class="form-control" type="date" />
+            <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="DepartmentId" class="form-label">Department</label>
+            <select asp-for="DepartmentId" class="form-select" asp-items="ViewBag.Departments">
+                <option value="">-- Select Department --</option>
+            </select>
+            <span asp-validation-for="DepartmentId" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="DesignationId" class="form-label">Designation</label>
+            <select asp-for="DesignationId" class="form-select" asp-items="ViewBag.Designations">
+                <option value="">-- Select Designation --</option>
+            </select>
+            <span asp-validation-for="DesignationId" class="text-danger"></span>
+        </div>
+
+        <div class="col-12">
+            <label asp-for="Address" class="form-label"></label>
+            <textarea asp-for="Address" class="form-control" rows="2"></textarea>
+            <span asp-validation-for="Address" class="text-danger"></span>
+        </div>
+
+        <div class="col-12 mt-3">
+            <button type="submit" class="btn btn-warning">Update Employee</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
 </div>
 
 @section Scripts {

@@ -36,17 +36,16 @@ namespace HRMS.Controllers
 
             if (!ModelState.IsValid) return View("~/Views/authView/Register/Register.cshtml", model);
 
-            // 1. CAPTCHA v3 CHECK
-            var captchaToken = Request.Form["g-recaptcha-response"];
-            
-            // VerifyToken checks if Score >= 0.5
+            // Safe Token Retrieval
+            string captchaToken = Request.Form["g-recaptcha-response"].ToString();
+            if (string.IsNullOrEmpty(captchaToken)) captchaToken = "";
+
             if (string.IsNullOrEmpty(captchaToken) || !await _captchaService.VerifyToken(captchaToken))
             {
                 ModelState.AddModelError("", "Security check failed. You appear to be automated.");
                 return View("~/Views/authView/Register/Register.cshtml", model);
             }
 
-            // 2. SEND REGISTER REQUEST
             var json = JsonSerializer.Serialize(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             
@@ -116,15 +115,16 @@ namespace HRMS.Controllers
         {
             ViewData["RecaptchaSiteKey"] = _configuration["Recaptcha:SiteKey"];
 
-            // 1. CAPTCHA v3 CHECK
-            var captchaToken = Request.Form["g-recaptcha-response"];
+            // Safe Token Retrieval
+            string captchaToken = Request.Form["g-recaptcha-response"].ToString();
+            if (string.IsNullOrEmpty(captchaToken)) captchaToken = "";
+
             if (string.IsNullOrEmpty(captchaToken) || !await _captchaService.VerifyToken(captchaToken))
             {
                 ViewData["Error"] = "Security check failed. You appear to be automated.";
                 return View("~/Views/authView/Login/Login.cshtml");
             }
 
-            // 2. LOGIN LOGIC
             var loginModel = new { Email = email, Password = password, RememberMe = rememberMe };
             var content = new StringContent(JsonSerializer.Serialize(loginModel), Encoding.UTF8, "application/json");
 
