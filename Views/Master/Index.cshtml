@@ -13,32 +13,53 @@
         </button>
     </div>
 
-    @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
-    @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
     <div class="row">
         <div class="col-md-6">
             <div class="card shadow-sm h-100">
-                <div class="card-header bg-light"><strong>Existing Departments</strong></div>
+                <div class="card-header bg-light fw-bold">Existing Departments</div>
                 <div class="card-body p-0">
                     <table class="table table-striped mb-0 align-middle">
-                        <thead><tr><th>Name</th><th class="text-end">Action</th></tr></thead>
+                        <thead class="table-light">
+                            <tr><th>Name</th><th class="text-end">Action</th></tr>
+                        </thead>
                         <tbody>
-                            @foreach (var item in Model.Departments)
+                            @if (Model.Departments != null)
                             {
-                                <tr>
-                                    <td>@item.Name</td>
-                                    
-                                    <td class="text-end">
-                                        <button class="btn btn-sm btn-outline-warning border-0 edit-dept-btn"
-                                                data-id="@item.Id" data-name="@item.Name" data-code="@item.Code">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </button>
-                                        <form asp-action="DeleteDepartment" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Delete?');">
-                                            <button class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash"></i></button>
-                                        </form>
-                                    </td>
-                                </tr>
+                                foreach (var item in Model.Departments)
+                                {
+                                    <tr>
+                                        <td>@item.Name</td>
+                                        
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-warning border-0 edit-dept-btn"
+                                                    data-id="@item.Id" 
+                                                    data-name="@item.Name" 
+                                                    data-code="@item.Code">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                            <form asp-action="DeleteDepartment" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Delete @item.Name?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger border-0">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
                             }
                         </tbody>
                     </table>
@@ -48,26 +69,35 @@
 
         <div class="col-md-6">
             <div class="card shadow-sm h-100">
-                <div class="card-header bg-light"><strong>Existing Designations</strong></div>
+                <div class="card-header bg-light fw-bold">Existing Designations</div>
                 <div class="card-body p-0">
                     <table class="table table-striped mb-0 align-middle">
-                        <thead><tr><th>Name</th><th>Level</th><th class="text-end">Action</th></tr></thead>
+                        <thead class="table-light">
+                            <tr><th>Name</th><th>Level</th><th class="text-end">Action</th></tr>
+                        </thead>
                         <tbody>
-                            @foreach (var item in Model.Designations)
+                            @if (Model.Designations != null)
                             {
-                                <tr>
-                                    <td>@item.Name</td>
-                                    <td><span class="badge bg-info text-dark">Level @item.Level</span></td>
-                                    <td class="text-end">
-                                        <button class="btn btn-sm btn-outline-warning border-0 edit-desig-btn"
-                                                data-id="@item.Id" data-name="@item.Name" data-level="@item.Level">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </button>
-                                        <form asp-action="DeleteDesignation" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Delete?');">
-                                            <button class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash"></i></button>
-                                        </form>
-                                    </td>
-                                </tr>
+                                foreach (var item in Model.Designations)
+                                {
+                                    <tr>
+                                        <td>@item.Name</td>
+                                        <td><span class="badge bg-info text-dark">Level @item.Level</span></td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-warning border-0 edit-desig-btn"
+                                                    data-id="@item.Id" 
+                                                    data-name="@item.Name" 
+                                                    data-level="@item.Level">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                            <form asp-action="DeleteDesignation" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Delete @item.Name?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger border-0">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
                             }
                         </tbody>
                     </table>
@@ -77,38 +107,39 @@
     </div>
 </div>
 
-<div class="modal fade" id="createMasterModal" tabindex="-1">
+<div class="modal fade" id="createMasterModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Add Master Data</h5>
+                <h5 class="modal-title">Add New Data</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form asp-action="Create" method="post">
                     <div class="row">
                         <div class="col-md-6 border-end">
-                            <h6 class="text-primary">Department</h6>
+                            <h6 class="text-primary fw-bold">Department</h6>
                             <div class="mb-3">
-                                <label class="form-label">Name</label>
-                                <input asp-for="DeptName" class="form-control" />
+                                <label asp-for="DeptName" class="form-label">Name</label>
+                                <input asp-for="DeptName" class="form-control" placeholder="e.g. HR" />
                             </div>
                             
                         </div>
                         <div class="col-md-6">
-                            <h6 class="text-primary">Designation</h6>
+                            <h6 class="text-primary fw-bold">Designation</h6>
                             <div class="mb-3">
-                                <label class="form-label">Name</label>
-                                <input asp-for="DesigName" class="form-control" />
+                                <label asp-for="DesigName" class="form-label">Name</label>
+                                <input asp-for="DesigName" class="form-control" placeholder="e.g. Manager" />
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Level (1-10)</label>
+                                <label asp-for="DesigLevel" class="form-label">Level</label>
                                 <input asp-for="DesigLevel" class="form-control" type="number" min="1" max="10" />
                             </div>
                         </div>
                     </div>
-                    <div class="text-center mt-3">
-                        <button type="submit" class="btn btn-success px-4">Save</button>
+                    <div class="text-end mt-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-success">Save</button>
                     </div>
                 </form>
             </div>
@@ -116,7 +147,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="editDeptModal" tabindex="-1">
+<div class="modal fade" id="editDeptModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-warning text-dark">
@@ -127,12 +158,13 @@
                 <div class="modal-body">
                     <input type="hidden" name="Id" id="editDept_Id" />
                     <div class="mb-3">
-                        <label class="form-label">Name</label>
+                        <label class="form-label">Department Name</label>
                         <input name="Name" id="editDept_Name" class="form-control" required />
                     </div>
-                    
+                   
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-warning">Update</button>
                 </div>
             </form>
@@ -140,7 +172,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="editDesigModal" tabindex="-1">
+<div class="modal fade" id="editDesigModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-warning text-dark">
@@ -151,7 +183,7 @@
                 <div class="modal-body">
                     <input type="hidden" name="Id" id="editDesig_Id" />
                     <div class="mb-3">
-                        <label class="form-label">Name</label>
+                        <label class="form-label">Designation Name</label>
                         <input name="Name" id="editDesig_Name" class="form-control" required />
                     </div>
                     <div class="mb-3">
@@ -160,6 +192,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-warning">Update</button>
                 </div>
             </form>
@@ -171,30 +204,36 @@
     <script>
         $(document).ready(function () {
             
-            // Open Edit Dept Modal
+            // 1. Open Edit Department Modal
             $('.edit-dept-btn').click(function () {
                 var id = $(this).data('id');
                 var name = $(this).data('name');
                 var code = $(this).data('code');
 
+                // Populate Fields
                 $('#editDept_Id').val(id);
                 $('#editDept_Name').val(name);
                 $('#editDept_Code').val(code);
 
-                new bootstrap.Modal(document.getElementById('editDeptModal')).show();
+                // Show Modal
+                var modal = new bootstrap.Modal(document.getElementById('editDeptModal'));
+                modal.show();
             });
 
-            // Open Edit Desig Modal
+            // 2. Open Edit Designation Modal
             $('.edit-desig-btn').click(function () {
                 var id = $(this).data('id');
                 var name = $(this).data('name');
                 var level = $(this).data('level');
 
+                // Populate Fields
                 $('#editDesig_Id').val(id);
                 $('#editDesig_Name').val(name);
                 $('#editDesig_Level').val(level);
 
-                new bootstrap.Modal(document.getElementById('editDesigModal')).show();
+                // Show Modal
+                var modal = new bootstrap.Modal(document.getElementById('editDesigModal'));
+                modal.show();
             });
 
         });

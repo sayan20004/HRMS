@@ -26,11 +26,11 @@ namespace HRMS.Controllers
             }
         }
 
-        // --- 1. INDEX ( Loads Dropdowns for Modals) ---
+        // --- INDEX WITH SEARCH ---
         public async Task<IActionResult> Index(string searchString)
         {
             AddAuthHeader();
-            await LoadDropdowns(); // Load data for the Modals
+            await LoadDropdowns(); 
 
             var response = await _client.GetAsync($"{_apiBaseUrl}/employee");
             List<EmployeeViewModel> employees = new List<EmployeeViewModel>();
@@ -47,14 +47,16 @@ namespace HRMS.Controllers
                 searchString = searchString.ToLower();
                 employees = employees.Where(e => 
                     e.FullName.ToLower().Contains(searchString) || 
-                    e.Email.ToLower().Contains(searchString)
+                    e.Email.ToLower().Contains(searchString) ||
+                    e.MobileNumber.Contains(searchString)
                 ).ToList();
             }
 
+            ViewData["CurrentFilter"] = searchString;
             return View(employees);
         }
 
-        // --- 2. GET SINGLE EMPLOYEE (For Edit Modal AJAX) ---
+        // --- GET SINGLE EMPLOYEE (AJAX) ---
         [HttpGet]
         public async Task<IActionResult> GetEmployee(int id)
         {
@@ -63,32 +65,27 @@ namespace HRMS.Controllers
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                // Return JSON directly to the modal
                 return Content(content, "application/json");
             }
             return NotFound();
         }
 
-        // --- 3. CREATE (POST Only) ---
+        // --- CREATE ---
         [HttpPost]
         public async Task<IActionResult> Create(EmployeeViewModel model)
         {
             AddAuthHeader();
-            // Note: If model state is invalid, we redirect to Index with error (simplest for Modals without complex AJAX form handling)
-            
             var json = JsonSerializer.Serialize(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await _client.PostAsync($"{_apiBaseUrl}/employee", content);
 
-            if (response.IsSuccessStatusCode)
-                TempData["Success"] = "Employee created successfully!";
-            else
-                TempData["Error"] = "Failed to create employee.";
+            if (response.IsSuccessStatusCode) TempData["Success"] = "Employee created successfully!";
+            else TempData["Error"] = "Failed to create employee.";
 
             return RedirectToAction("Index");
         }
 
-        // --- 4. EDIT (POST Only) ---
+        // --- EDIT ---
         [HttpPost]
         public async Task<IActionResult> Edit(EmployeeViewModel model)
         {
@@ -97,28 +94,28 @@ namespace HRMS.Controllers
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await _client.PutAsync($"{_apiBaseUrl}/employee/{model.Id}", content);
 
-            if (response.IsSuccessStatusCode)
-                TempData["Success"] = "Employee updated successfully!";
-            else
-                TempData["Error"] = "Failed to update employee.";
+            if (response.IsSuccessStatusCode) TempData["Success"] = "Employee updated successfully!";
+            else TempData["Error"] = "Failed to update employee.";
 
             return RedirectToAction("Index");
         }
 
+        // --- DELETE ---
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
             AddAuthHeader();
             var response = await _client.DeleteAsync($"{_apiBaseUrl}/employee/{id}");
-            if (response.IsSuccessStatusCode) TempData["Success"] = "Employee deleted.";
-            else TempData["Error"] = "Delete failed.";
+            
+            if (response.IsSuccessStatusCode) TempData["Success"] = "Employee deleted successfully!";
+            else TempData["Error"] = "Failed to delete employee.";
+
             return RedirectToAction("Index");
         }
 
         private async Task LoadDropdowns()
         {
             AddAuthHeader();
-            // Fetch Departments
             var deptRes = await _client.GetAsync($"{_apiBaseUrl}/master/departments");
             if (deptRes.IsSuccessStatusCode)
             {
@@ -126,7 +123,6 @@ namespace HRMS.Controllers
                 var depts = JsonSerializer.Deserialize<List<DepartmentViewModel>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 ViewBag.Departments = new SelectList(depts, "Id", "Name");
             }
-            // Fetch Designations
             var desigRes = await _client.GetAsync($"{_apiBaseUrl}/master/designations");
             if (desigRes.IsSuccessStatusCode)
             {
