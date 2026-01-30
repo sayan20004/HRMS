@@ -34,7 +34,7 @@
                 </li>
 
                 <li>
-                    <a href="#employeeSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <a href="#employeeSubmenu" data-bs-toggle="collapse" aria-expanded="false" >
                         <i class="bi bi-person-badge me-2"></i> Employees
                     </a>
                     <ul class="collapse list-unstyled" id="employeeSubmenu">
@@ -43,16 +43,12 @@
                                 <i class="bi bi-list-ul me-2"></i> Employee List
                             </a>
                         </li>
-                        <li>
-                            <a asp-controller="Employee" asp-action="Create">
-                                <i class="bi bi-person-plus me-2"></i> Add New Employee
-                            </a>
-                        </li>
+                        
                     </ul>
                 </li>
 
-                <li>
-                    <a href="#masterSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                @* <li>
+                    <a href="#masterSubmenu" data-bs-toggle="collapse" aria-expanded="false" >
                         <i class="bi bi-database-gear me-2"></i> Master Data
                     </a>
                     <ul class="collapse list-unstyled" id="masterSubmenu">
@@ -62,12 +58,40 @@
                             </a>
                         </li>
                     </ul>
+                </li> *@
+
+                <li>
+                    <a href="#masterSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                        <i class="bi bi-database-gear me-2"></i> Master Data
+                    </a>
+                    <ul class="collapse list-unstyled" id="masterSubmenu">
+                        <li>
+                            <a asp-controller="Master" asp-action="CreateDepartment">
+                                <i class="bi bi-building-add me-2"></i> Create Department
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Master" asp-action="CreateDesignation">
+                                <i class="bi bi-award me-2"></i> Create Designation
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Master" asp-action="CreatePost">
+                                <i class="bi bi-briefcase me-2"></i> Create Post
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Master" asp-action="Index">
+                                <i class="bi bi-list-columns me-2"></i> View All Lists
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 
                 @if (isLoggedIn)
                 {
                     <li>
-                        <a href="#accountSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                        <a href="#accountSubmenu" data-bs-toggle="collapse" aria-expanded="false" >
                             <i class="bi bi-person-gear me-2"></i> My Account
                         </a>
                         <ul class="collapse list-unstyled" id="accountSubmenu">

@@ -55,17 +55,44 @@ html, body {
 }
 
 /* DROPDOWN ARROW */
-.dropdown-toggle::after {
-  display: block;
-  position: absolute;
-  top: 50%;
-  right: 20px;
-  transform: translateY(-50%);
+
+
+/* --- SUB-MENU STYLING (Tree Structure) --- */
+
+/* 1. Background for the sub-menu container */
+ul.collapse {
+    background: #1c1f23; /* Darker than parent to look "inset" */
+    border-left: 4px solid #495057; 
+    margin-left: 20px; 
 }
 
-/* SUB-MENU */
-ul.collapse { background: #2c3034; }
-/* ul.collapse li a { padding-left: 45px !important; font-size: 0.9em; } */
+/* 2. Sub-menu Links */
+ul.collapse li a {
+    /* padding-left: 15px !important; Less padding since we indented the block */
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 0.85em; /* Smaller font for hierarchy */
+    color: #ced4da; /* Slightly dimmer text */
+    
+    /* REMOVE ANIMATIONS (Micro-interactions) */
+    /* transition: ease-in-out 1ms !important; */
+    border-left: none !important; /* Remove the hover accent from parent style */
+}
+
+/* 3. Static Hover State (No sliding/fading) */
+ul.collapse li a:hover {
+    background: transparent !important; /* No background change */
+    color: #fff !important; /* Just brighten text */
+    text-decoration: underline; /* Simple standard underline */
+    /* padding-left: 15px !important; Keep position static (no sliding) */
+}
+
+/* 4. Active/Current Sub-page */
+ul.collapse li a.active, 
+ul.collapse li a[href*="CurrentPage"] { 
+    color: #fff !important;
+    font-weight: bold;
+}
 
 /* CONTENT */
 #content {

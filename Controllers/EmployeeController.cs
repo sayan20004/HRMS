@@ -18,13 +18,29 @@ namespace HRMS.Controllers
         }
 
         private void AddAuthHeader()
+{
+    // 1. Try Session first
+    var token = HttpContext.Session.GetString("Token");
+
+    // 2. If Session is empty, try to get from User Claims (Cookie)
+    if (string.IsNullOrEmpty(token) && User.Identity!.IsAuthenticated)
+    {
+        token = User.FindFirst("Token")?.Value;
+        
+        // Restore Session for subsequent requests to save parsing time
+        if (!string.IsNullOrEmpty(token))
         {
-            var token = HttpContext.Session.GetString("Token");
-            if (!string.IsNullOrEmpty(token))
-            {
-                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            }
+             HttpContext.Session.SetString("Token", token);
+             HttpContext.Session.SetString("Username", User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "");
+             HttpContext.Session.SetString("Email", User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "");
         }
+    }
+
+    if (!string.IsNullOrEmpty(token))
+    {
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    }
+}
 
         // --- INDEX WITH SEARCH ---
         public async Task<IActionResult> Index(string searchString)
@@ -116,6 +132,8 @@ namespace HRMS.Controllers
         private async Task LoadDropdowns()
         {
             AddAuthHeader();
+            
+            // Departments
             var deptRes = await _client.GetAsync($"{_apiBaseUrl}/master/departments");
             if (deptRes.IsSuccessStatusCode)
             {
@@ -123,12 +141,23 @@ namespace HRMS.Controllers
                 var depts = JsonSerializer.Deserialize<List<DepartmentViewModel>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 ViewBag.Departments = new SelectList(depts, "Id", "Name");
             }
+
+            // Designations
             var desigRes = await _client.GetAsync($"{_apiBaseUrl}/master/designations");
             if (desigRes.IsSuccessStatusCode)
             {
                 var content = await desigRes.Content.ReadAsStringAsync();
                 var desigs = JsonSerializer.Deserialize<List<DesignationViewModel>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 ViewBag.Designations = new SelectList(desigs, "Id", "Name");
+            }
+
+            // --- FETCH POSTS ---
+            var postRes = await _client.GetAsync($"{_apiBaseUrl}/master/posts");
+            if (postRes.IsSuccessStatusCode)
+            {
+                var content = await postRes.Content.ReadAsStringAsync();
+                var posts = JsonSerializer.Deserialize<List<Post>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                ViewBag.Posts = new SelectList(posts, "Id", "Name");
             }
         }
     }

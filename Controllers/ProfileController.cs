@@ -17,13 +17,29 @@ namespace HRMS.Controllers
         }
 
         private void AddAuthHeader()
+{
+    // 1. Try Session first
+    var token = HttpContext.Session.GetString("Token");
+
+    // 2. If Session is empty, try to get from User Claims (Cookie)
+    if (string.IsNullOrEmpty(token) && User.Identity!.IsAuthenticated)
+    {
+        token = User.FindFirst("Token")?.Value;
+        
+        // Restore Session for subsequent requests to save parsing time
+        if (!string.IsNullOrEmpty(token))
         {
-            var token = HttpContext.Session.GetString("Token");
-            if (!string.IsNullOrEmpty(token))
-            {
-                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            }
+             HttpContext.Session.SetString("Token", token);
+             HttpContext.Session.SetString("Username", User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "");
+             HttpContext.Session.SetString("Email", User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "");
         }
+    }
+
+    if (!string.IsNullOrEmpty(token))
+    {
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    }
+}
 
         public async Task<IActionResult> Index()
         {

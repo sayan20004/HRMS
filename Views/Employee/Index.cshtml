@@ -1,20 +1,32 @@
 @model IEnumerable<HRMS.Models.EmployeeViewModel>
 
 @{
-    ViewData["Title"] = "Employees";
+    ViewData["Title"] = "Employee List";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Employee List</h2>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createEmployeeModal">
-            <i class="bi bi-plus-lg"></i> Add New Employee
-        </button>
+        <h2>Employee Management</h2>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-person-plus-fill"></i> Add New Employee
+        </a>
     </div>
 
-    @if (TempData["Success"] != null) { <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button class="btn-close" data-bs-dismiss="alert"></button></div> }
-    @if (TempData["Error"] != null) { <div class="alert alert-danger alert-dismissible fade show">@TempData["Error"]<button class="btn-close" data-bs-dismiss="alert"></button></div> }
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
     <div class="card shadow-sm mb-4">
         <div class="card-body bg-light py-3">
@@ -24,166 +36,76 @@
                 </div>
                 <div class="col-md-5">
                     <input type="text" name="searchString" class="form-control" 
-                           placeholder="Search by Name, Email..." 
+                           placeholder="Search by Name, Email or Mobile..." 
                            value="@ViewData["CurrentFilter"]" />
                 </div>
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-primary">Find</button>
+                    <button type="submit" class="btn btn-primary">Search</button>
                     <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="card shadow-sm">
+    <div class="card shadow-sm border-0">
         <div class="card-body p-0">
-            <table class="table table-striped table-hover align-middle mb-0">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Full Name (Click to Edit)</th>
-                        <th>Email</th>
-                        <th>Mobile</th>
-                        <th>Department</th>
-                        <th>Designation</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.Any())
-                    {
-                        foreach (var item in Model)
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Mobile</th>
+                            <th>Department</th>
+                            <th>Designation</th>
+                            <th>Post</th> <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-primary">@item.FullName</div>
+                                    </td>
+                                    <td>@item.Email</td>
+                                    <td>@item.MobileNumber</td>
+                                    <td>
+                                        <span class="badge bg-secondary">@(item.Department?.Name ?? "-")</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info text-dark">@(item.Designation?.Name ?? "-")</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">@(item.Post?.Name ?? "-")</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning border-0" title="Edit">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        
+                                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete @item.FullName?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger border-0" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
                         {
                             <tr>
-                                <td>
-                                    <a href="javascript:void(0);" 
-                                       class="text-decoration-none fw-bold text-primary edit-btn" 
-                                       data-id="@item.Id">
-                                        @item.FullName <i class="bi bi-pencil-square small ms-1"></i>
-                                    </a>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    No employees found. Try creating one or adjusting your search.
                                 </td>
-                                <td>@item.Email</td>
-                                <td>@item.MobileNumber</td>
-                                <td><span class="badge bg-secondary">@(item.Department?.Name ?? "-")</span></td>
-                                <td><span class="badge bg-info text-dark">@(item.Designation?.Name ?? "-")</span></td>
                             </tr>
                         }
-                    }
-                    else
-                    {
-                        <tr><td colspan="5" class="text-center text-muted py-4">No employees found.</td></tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="createEmployeeModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Add New Employee</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <form asp-action="Create" method="post">
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6"><label class="form-label">Full Name</label><input name="FullName" class="form-control" required /></div>
-                        <div class="col-md-6"><label class="form-label">Email</label><input name="Email" class="form-control" required /></div>
-                        <div class="col-md-6"><label class="form-label">Mobile</label><input name="MobileNumber" class="form-control" required /></div>
-                        <div class="col-md-6"><label class="form-label">DOB</label><input name="DateOfBirth" type="date" class="form-control" /></div>
-                        <div class="col-md-6"><label class="form-label">Department</label><select name="DepartmentId" class="form-select" asp-items="ViewBag.Departments" required><option value="">Select</option></select></div>
-                        <div class="col-md-6"><label class="form-label">Designation</label><select name="DesignationId" class="form-select" asp-items="ViewBag.Designations" required><option value="">Select</option></select></div>
-                        <div class="col-12"><label class="form-label">Address</label><textarea name="Address" class="form-control" rows="2"></textarea></div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Employee</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="editEmployeeModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title">Edit Employee Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            
-            <div class="modal-body">
-                <form asp-action="Edit" method="post" id="editForm">
-                    <input type="hidden" name="Id" id="edit_Id" />
-                    
-                    <div class="row g-3">
-                        <div class="col-md-6"><label class="form-label">Full Name</label><input name="FullName" id="edit_FullName" class="form-control" required /></div>
-                        <div class="col-md-6"><label class="form-label">Email</label><input name="Email" id="edit_Email" class="form-control" required /></div>
-                        <div class="col-md-6"><label class="form-label">Mobile</label><input name="MobileNumber" id="edit_MobileNumber" class="form-control" required /></div>
-                        <div class="col-md-6"><label class="form-label">DOB</label><input name="DateOfBirth" id="edit_DateOfBirth" type="date" class="form-control" /></div>
-                        <div class="col-md-6"><label class="form-label">Department</label><select name="DepartmentId" id="edit_DepartmentId" class="form-select" asp-items="ViewBag.Departments" required></select></div>
-                        <div class="col-md-6"><label class="form-label">Designation</label><select name="DesignationId" id="edit_DesignationId" class="form-select" asp-items="ViewBag.Designations" required></select></div>
-                        <div class="col-12"><label class="form-label">Address</label><textarea name="Address" id="edit_Address" class="form-control" rows="2"></textarea></div>
-                    </div>
-                    
-                    <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" class="btn btn-warning me-2"><i class="bi bi-save"></i> Save Changes</button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="modal-footer bg-light justify-content-between">
-                <div>
-                    <form asp-action="Delete" method="post" onsubmit="return confirm('Are you sure you want to delete this employee? This cannot be undone.');">
-                        <input type="hidden" name="id" id="delete_Id" /> <button type="submit" class="btn btn-outline-danger">
-                            <i class="bi bi-trash"></i> Delete Employee
-                        </button>
-                    </form>
-                </div>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        $(document).ready(function () {
-            
-            // OPEN EDIT MODAL AND LOAD DATA
-            $('.edit-btn').click(function () {
-                var empId = $(this).data('id');
-                
-                // Fetch Data via AJAX
-                $.get('/Employee/GetEmployee/' + empId, function (data) {
-                    
-                    // 1. Populate Edit Fields
-                    $('#edit_Id').val(data.id);
-                    $('#edit_FullName').val(data.fullName);
-                    $('#edit_Email').val(data.email);
-                    $('#edit_MobileNumber').val(data.mobileNumber);
-                    $('#edit_Address').val(data.address);
-                    $('#edit_DepartmentId').val(data.departmentId);
-                    $('#edit_DesignationId').val(data.designationId);
-
-                    // 2. Populate Date
-                    if(data.dateOfBirth) {
-                        var date = new Date(data.dateOfBirth);
-                        var day = ("0" + date.getDate()).slice(-2);
-                        var month = ("0" + (date.getMonth() + 1)).slice(-2);
-                        var dateStr = date.getFullYear() + "-" + month + "-" + day;
-                        $('#edit_DateOfBirth').val(dateStr);
-                    }
-
-                    // 3. Populate Hidden Delete ID
-                    $('#delete_Id').val(data.id);
-
-                    // 4. Show Modal
-                    var myModal = new bootstrap.Modal(document.getElementById('editEmployeeModal'));
-                    myModal.show();
-                });
-            });
-        });
-    </script>
-}

@@ -6,62 +6,87 @@
 }
 
 <div class="container mt-4">
-    <h2>Create New Employee</h2>
-    
-    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-plus-fill"></i> Add New Employee</h5>
+                </div>
+                <div class="card-body">
+                    
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["Error"]</div>
+                    }
 
-    <form asp-action="Create" class="row g-3">
-        <div class="col-md-6">
-            <label asp-for="FullName" class="form-label"></label>
-            <input asp-for="FullName" class="form-control" />
-            <span asp-validation-for="FullName" class="text-danger"></span>
-        </div>
+                    <form asp-action="Create" method="post" class="row g-3">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-        <div class="col-md-6">
-            <label asp-for="Email" class="form-label"></label>
-            <input asp-for="Email" class="form-control" />
-            <span asp-validation-for="Email" class="text-danger"></span>
-        </div>
+                        <div class="col-md-6">
+                            <label asp-for="FullName" class="form-label fw-bold">Full Name</label>
+                            <input asp-for="FullName" class="form-control" placeholder="John Doe" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
 
-        <div class="col-md-6">
-            <label asp-for="MobileNumber" class="form-label"></label>
-            <input asp-for="MobileNumber" class="form-control" placeholder="10-digit number" />
-            <span asp-validation-for="MobileNumber" class="text-danger"></span>
-        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label fw-bold">Email Address</label>
+                            <input asp-for="Email" class="form-control" placeholder="john@example.com" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
 
-        <div class="col-md-6">
-            <label asp-for="DateOfBirth" class="form-label"></label>
-            <input asp-for="DateOfBirth" class="form-control" type="date" />
-            <span asp-validation-for="DateOfBirth" class="text-danger"></span>
-        </div>
+                        <div class="col-md-6">
+                            <label asp-for="MobileNumber" class="form-label fw-bold">Mobile Number</label>
+                            <input asp-for="MobileNumber" class="form-control" placeholder="10-digit number" />
+                            <span asp-validation-for="MobileNumber" class="text-danger"></span>
+                        </div>
 
-        <div class="col-md-6">
-            <label asp-for="DepartmentId" class="form-label">Department</label>
-            <select asp-for="DepartmentId" class="form-select" asp-items="ViewBag.Departments">
-                <option value="">-- Select Department --</option>
-            </select>
-            <span asp-validation-for="DepartmentId" class="text-danger"></span>
-        </div>
+                        <div class="col-md-6">
+                            <label asp-for="DateOfBirth" class="form-label fw-bold">Date of Birth</label>
+                            <input asp-for="DateOfBirth" class="form-control" type="date" />
+                            <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                        </div>
 
-        <div class="col-md-6">
-            <label asp-for="DesignationId" class="form-label">Designation</label>
-            <select asp-for="DesignationId" class="form-select" asp-items="ViewBag.Designations">
-                <option value="">-- Select Designation --</option>
-            </select>
-            <span asp-validation-for="DesignationId" class="text-danger"></span>
-        </div>
+                        <div class="col-md-4">
+                            <label asp-for="DepartmentId" class="form-label fw-bold">Department</label>
+                            <select asp-for="DepartmentId" class="form-select" asp-items="ViewBag.Departments">
+                                <option value="">-- Select --</option>
+                            </select>
+                            <span asp-validation-for="DepartmentId" class="text-danger"></span>
+                        </div>
 
-        <div class="col-12">
-            <label asp-for="Address" class="form-label"></label>
-            <textarea asp-for="Address" class="form-control" rows="2"></textarea>
-            <span asp-validation-for="Address" class="text-danger"></span>
-        </div>
+                        <div class="col-md-4">
+                            <label asp-for="DesignationId" class="form-label fw-bold">Designation</label>
+                            <select asp-for="DesignationId" class="form-select" asp-items="ViewBag.Designations">
+                                <option value="">-- Select --</option>
+                            </select>
+                            <span asp-validation-for="DesignationId" class="text-danger"></span>
+                        </div>
 
-        <div class="col-12 mt-3">
-            <button type="submit" class="btn btn-success">Create Employee</button>
-            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                        <div class="col-md-4">
+                            <label asp-for="PostId" class="form-label fw-bold">Post</label>
+                            <select asp-for="PostId" class="form-select" asp-items="ViewBag.Posts">
+                                <option value="">-- Select --</option>
+                            </select>
+                            <span asp-validation-for="PostId" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Address" class="form-label fw-bold">Address</label>
+                            <textarea asp-for="Address" class="form-control" rows="2" placeholder="Residential Address"></textarea>
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12 mt-4 d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-success px-5">
+                                <i class="bi bi-check-circle"></i> Save Employee
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-    </form>
+    </div>
 </div>
 
 @section Scripts {

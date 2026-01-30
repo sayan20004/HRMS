@@ -19,30 +19,60 @@ namespace HRMS.Controllers
         private void AddAuthHeader()
         {
             var token = HttpContext.Session.GetString("Token");
+            if (string.IsNullOrEmpty(token) && User.Identity!.IsAuthenticated)
+                token = User.FindFirst("Token")?.Value;
+
             if (!string.IsNullOrEmpty(token))
                 _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
 
+        // --- 1. DEPARTMENT PAGE (Create + List) ---
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> CreateDepartment()
         {
             AddAuthHeader();
             var model = new MasterViewModel();
 
-            // Fetch Departments
-            var deptRes = await _client.GetAsync($"{_apiBaseUrl}/departments");
-            if (deptRes.IsSuccessStatusCode)
+            // Fetch Existing Departments to show below form
+            var response = await _client.GetAsync($"{_apiBaseUrl}/departments");
+            if (response.IsSuccessStatusCode)
             {
-                var content = await deptRes.Content.ReadAsStringAsync();
+                var content = await response.Content.ReadAsStringAsync();
                 model.Departments = JsonSerializer.Deserialize<List<DepartmentViewModel>>(content, 
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<DepartmentViewModel>();
             }
 
-            // Fetch Designations
-            var desigRes = await _client.GetAsync($"{_apiBaseUrl}/designations");
-            if (desigRes.IsSuccessStatusCode)
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateDepartment(MasterViewModel model)
+        {
+            AddAuthHeader();
+            var data = new { Name = model.DeptName, Code = model.DeptCode }; 
+            var content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync($"{_apiBaseUrl}/departments", content);
+
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "Department Created Successfully";
+            else
+                TempData["Error"] = "Failed to create Department";
+
+            return RedirectToAction("CreateDepartment"); // Reloads page (GET) which re-fetches list
+        }
+
+        // --- 2. DESIGNATION PAGE (Create + List) ---
+        [HttpGet]
+        public async Task<IActionResult> CreateDesignation()
+        {
+            AddAuthHeader();
+            var model = new MasterViewModel();
+
+            var response = await _client.GetAsync($"{_apiBaseUrl}/designations");
+            if (response.IsSuccessStatusCode)
             {
-                var content = await desigRes.Content.ReadAsStringAsync();
+                var content = await response.Content.ReadAsStringAsync();
                 model.Designations = JsonSerializer.Deserialize<List<DesignationViewModel>>(content, 
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<DesignationViewModel>();
             }
@@ -50,90 +80,59 @@ namespace HRMS.Controllers
             return View(model);
         }
 
-        // --- CREATE (Handles both Dept and Desig) ---
         [HttpPost]
-        public async Task<IActionResult> Create(MasterViewModel model)
+        public async Task<IActionResult> CreateDesignation(MasterViewModel model)
         {
             AddAuthHeader();
-            bool deptSuccess = true;
-            bool desigSuccess = true;
+            var data = new { Name = model.DesigName, Level = model.DesigLevel ?? 1 };
+            var content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json");
 
-            // Save Department
-            if (!string.IsNullOrEmpty(model.DeptName))
-            {
-                var deptData = new { Name = model.DeptName, Code = model.DeptCode };
-                var content = new StringContent(JsonSerializer.Serialize(deptData), Encoding.UTF8, "application/json");
-                var response = await _client.PostAsync($"{_apiBaseUrl}/departments", content);
-                if (!response.IsSuccessStatusCode) deptSuccess = false;
-            }
+            var response = await _client.PostAsync($"{_apiBaseUrl}/designations", content);
 
-            // Save Designation
-            if (!string.IsNullOrEmpty(model.DesigName))
-            {
-                var desigData = new { Name = model.DesigName, Level = model.DesigLevel ?? 1 };
-                var content = new StringContent(JsonSerializer.Serialize(desigData), Encoding.UTF8, "application/json");
-                var response = await _client.PostAsync($"{_apiBaseUrl}/designations", content);
-                if (!response.IsSuccessStatusCode) desigSuccess = false;
-            }
-
-            if (!deptSuccess || !desigSuccess)
-                TempData["Error"] = "Some data could not be saved.";
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "Designation Created Successfully";
             else
-                TempData["Success"] = "Data saved successfully!";
+                TempData["Error"] = "Failed to create Designation";
 
-            return RedirectToAction("Index");
+            return RedirectToAction("CreateDesignation");
         }
 
-        // --- EDIT DEPARTMENT ---
-        [HttpPost]
-        public async Task<IActionResult> EditDepartment(int Id, string Name, string Code)
+        // --- 3. POST PAGE (Create + List) ---
+        [HttpGet]
+        public async Task<IActionResult> CreatePost()
         {
             AddAuthHeader();
-            var model = new { Id, Name, Code };
-            var content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
-            var response = await _client.PutAsync($"{_apiBaseUrl}/departments/{Id}", content);
+            var model = new MasterViewModel(); // Use MasterViewModel to hold List<Post>
 
-            if (response.IsSuccessStatusCode) TempData["Success"] = "Department updated.";
-            else TempData["Error"] = "Update failed.";
+            var response = await _client.GetAsync($"{_apiBaseUrl}/posts");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                model.Posts = JsonSerializer.Deserialize<List<Post>>(content, 
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<Post>();
+            }
 
-            return RedirectToAction("Index");
+            return View(model);
         }
 
-        // --- EDIT DESIGNATION ---
         [HttpPost]
-        public async Task<IActionResult> EditDesignation(int Id, string Name, int Level)
+        public async Task<IActionResult> CreatePost(string PostName)
         {
             AddAuthHeader();
-            var model = new { Id, Name, Level };
-            var content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
-            var response = await _client.PutAsync($"{_apiBaseUrl}/designations/{Id}", content);
+            var data = new { Name = PostName };
+            var content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json");
 
-            if (response.IsSuccessStatusCode) TempData["Success"] = "Designation updated.";
-            else TempData["Error"] = "Update failed.";
+            var response = await _client.PostAsync($"{_apiBaseUrl}/posts", content);
 
-            return RedirectToAction("Index");
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "Post Created Successfully";
+            else
+                TempData["Error"] = "Failed to create Post";
+
+            return RedirectToAction("CreatePost");
         }
-
-        // --- DELETE DEPARTMENT ---
-        [HttpPost]
-        public async Task<IActionResult> DeleteDepartment(int id)
-        {
-            AddAuthHeader();
-            var response = await _client.DeleteAsync($"{_apiBaseUrl}/departments/{id}");
-            if (response.IsSuccessStatusCode) TempData["Success"] = "Department deleted.";
-            else TempData["Error"] = "Delete failed (It might be in use).";
-            return RedirectToAction("Index");
-        }
-
-        // --- DELETE DESIGNATION ---
-        [HttpPost]
-        public async Task<IActionResult> DeleteDesignation(int id)
-        {
-            AddAuthHeader();
-            var response = await _client.DeleteAsync($"{_apiBaseUrl}/designations/{id}");
-            if (response.IsSuccessStatusCode) TempData["Success"] = "Designation deleted.";
-            else TempData["Error"] = "Delete failed (It might be in use).";
-            return RedirectToAction("Index");
-        }
+        
+        // --- Keep Index if you want a master summary, or remove it ---
+        public IActionResult Index() => RedirectToAction("CreateDepartment"); 
     }
 }

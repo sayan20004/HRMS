@@ -1,24 +1,20 @@
-using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace HRMS.Models
 {
     public class MasterViewModel
     {
-        // --- INPUT FIELDS (For the Card) ---
-        [Display(Name = "Department Name")]
+        // --- Form Inputs ---
         public string? DeptName { get; set; }
-
-        [Display(Name = "Dept Code (e.g. IT)")]
         public string? DeptCode { get; set; }
-
-        [Display(Name = "Designation Name")]
         public string? DesigName { get; set; }
-
-        [Display(Name = "Level (1-10)")]
         public int? DesigLevel { get; set; }
-
-        // --- DISPLAY LISTS (For the Tables) ---
+        
+        // --- Lists for Display Tables ---
         public List<DepartmentViewModel> Departments { get; set; } = new List<DepartmentViewModel>();
         public List<DesignationViewModel> Designations { get; set; } = new List<DesignationViewModel>();
+        
+        // Added List for Posts
+        public List<Post> Posts { get; set; } = new List<Post>();
     }
 }
